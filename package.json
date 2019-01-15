@@ -1,0 +1,36 @@
+{
+  "name": "botframework-webchat-curator",
+  "version": "0.0.0-0",
+  "description": "Curates build artifacts for Web Chat",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "babel --extensions .js --out-dir lib --source-maps inline --verbose src",
+    "clean": "rimraf lib",
+    "postinstall": "npm run build",
+    "start": "concurrently --names \"babel,start\" \"npm run build:babel -- --watch\" \"node-dev --respawn .\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/compulim/botframework-webchat-curator.git"
+  },
+  "author": "William Wong <compulim@hotmail.com> (http://compulim.info/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/compulim/botframework-webchat-curator/issues"
+  },
+  "homepage": "https://github.com/compulim/botframework-webchat-curator#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/preset-env": "^7.2.3",
+    "babel-core": "^7.0.0-bridge.0",
+    "concurrently": "^4.1.0",
+    "node-dev": "^3.1.3",
+    "rimraf": "^2.6.3"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "restify": "^7.5.0"
+  }
+}
