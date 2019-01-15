@@ -7,7 +7,7 @@
     "build": "babel --extensions .js --out-dir lib --source-maps inline --verbose src",
     "clean": "rimraf lib",
     "postinstall": "npm run build",
-    "start": "concurrently --names \"babel,start\" \"npm run build:babel -- --watch\" \"node-dev --respawn .\""
+    "start": "concurrently --names \"build,start\" \"npm run build -- --watch\" \"node-dev --respawn .\""
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,12 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
-    "restify": "^7.5.0"
+    "azure-storage": "^2.10.2",
+    "core-js": "^3.0.0-beta.8",
+    "dotenv": "^6.2.0",
+    "math-random": "^1.0.3",
+    "p-defer": "^1.0.0",
+    "restify": "^7.5.0",
+    "yauzl": "^2.10.0"
   }
 }
