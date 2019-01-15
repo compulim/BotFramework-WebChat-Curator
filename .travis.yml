@@ -1,0 +1,24 @@
+sudo: required
+
+language: node_js
+
+node_js:
+- "11"
+
+services:
+- docker
+
+before_install:
+- echo no before_install
+
+install:
+- docker build -t webchat.azurecr.io/curator .
+
+script:
+- echo no test
+
+deploy:
+- provider: script
+  script: bash scripts/docker_push
+  on:
+    branch: master

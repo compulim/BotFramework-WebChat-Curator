@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    env_file: .env
+    image: webchat.azurecr.io/curator
+    ports:
+    - '5001:80'
