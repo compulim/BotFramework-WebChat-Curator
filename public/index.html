@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16.5.0/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16.5.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react-redux@5.0.7/dist/react-redux.min.js"></script>
+    <script src="https://unpkg.com/glamor@2.20.40/umd/index.js"></script>
+  </head>
+  <body>
+    <div id="root" role="main"></div>
+    <script type="text/babel">
+      'use strict';
+
+      (async function () {
+        const res = await fetch('index.json');
+
+        if (!res.ok) {
+          throw new Error(`server returned ${ res.status }`);
+        }
+
+        const { files } = await res.json();
+
+        const Files = ({ files }, index) => (
+          <ul>
+            { files.map(fileName => <File fileName={ fileName } key={ index } />) }
+          </ul>
+        );
+
+        const File = ({ fileName }) => (
+          <li>
+            <a href={ fileName }>{ fileName }</a>
+          </li>
+        );
+
+        window.ReactDOM.render(
+          <Files files={ files } />,
+          document.getElementById('root')
+        );
+      })().catch(err => console.error(err));
+    </script>
+  </body>
+</html>

@@ -2,7 +2,8 @@ import 'dotenv/config';
 
 import { createBlobService } from 'azure-storage';
 import { createServer } from 'restify';
-import { posix } from 'path';
+import { getType } from 'mime';
+import { extname, join, posix } from 'path';
 import { promisify } from 'util';
 import { URL } from 'url';
 
@@ -10,7 +11,7 @@ import createZipFileObservable from './ZipFileObservable';
 import random from 'math-random';
 
 const { AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_CONTAINER, PORT = 5000 } = process.env;
-const { join } = posix;
+const { join: posixJoin } = posix;
 const MAX_UPLOAD_SIZE = 104857600; // 100 MB
 
 function pad(value, count = 2, padding = '0') {
@@ -26,7 +27,9 @@ function pad(value, count = 2, padding = '0') {
 
 (async function () {
   const blobService = createBlobService();
+  const createBlockBlobFromLocalFile = promisify(blobService.createBlockBlobFromLocalFile.bind(blobService));
   const createBlockBlobFromStream = promisify(blobService.createBlockBlobFromStream.bind(blobService));
+  const createBlockBlobFromText = promisify(blobService.createBlockBlobFromText.bind(blobService));
   const server = createServer();
 
   server.get('/health.txt', (_, res) => {
@@ -66,15 +69,15 @@ function pad(value, count = 2, padding = '0') {
         const baseURL = new URL(`https://${ AZURE_STORAGE_ACCOUNT }.blob.core.windows.net/${ AZURE_STORAGE_CONTAINER }/${ id }/`);
 
         zipFileObservable.subscribe({
-          complete: () => {
+          complete: async () => {
+            await createBlockBlobFromLocalFile(AZURE_STORAGE_CONTAINER, posixJoin(id, 'index.html'), join(__dirname, '../public/index.html'));
+            await createBlockBlobFromText(AZURE_STORAGE_CONTAINER, posixJoin(id, 'index.json'), JSON.stringify({ files: filesUploaded }));
+
             res.sendRaw(
               200,
               JSON.stringify({
                 id,
-                human: `Your artifacts is now located at ${ baseURL.toString() }`,
-                filesUploaded: filesUploaded.map(fileName =>
-                  new URL(fileName, baseURL)
-                )
+                human: `Your artifacts is now uploaded, you can look at list of them at ${ baseURL.toString() }index.html.`
               }, null, 2),
               { 'Content-Type': 'application/json' }
             );
@@ -87,7 +90,17 @@ function pad(value, count = 2, padding = '0') {
           next: async ({ entry, next, readStream }) => {
             console.log(`Uploading ${ entry.fileName }`);
 
-            await createBlockBlobFromStream(AZURE_STORAGE_CONTAINER, join(id, entry.fileName), readStream, entry.uncompressedSize);
+            const contentType = getType(extname(entry.fileName));
+
+            await createBlockBlobFromStream(
+              AZURE_STORAGE_CONTAINER,
+              posixJoin(id, entry.fileName),
+              readStream,
+              entry.uncompressedSize,
+              {
+                contentSettings: { contentType }
+              }
+            );
             filesUploaded.push(entry.fileName);
 
             next();
